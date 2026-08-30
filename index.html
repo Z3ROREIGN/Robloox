@@ -1,1 +1,57 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Robloox — marketplace de itens e produtos para jogos Roblox."><title>Robloox — Marketplace</title><link rel="stylesheet" href="styles.css"></head><body><header class="top"><nav class="nav" aria-label="Navegação principal"><a class="brand" href="./" aria-label="Robloox"><img src="logo.svg" alt="Robloox"></a><div class="links"><a href="#categorias">Categorias</a><a href="#produtos">Produtos</a><a href="#como-funciona">Como funciona</a></div><input class="search" id="search" type="search" placeholder="Buscar produtos..." aria-label="Buscar produtos"></nav></header><main><section class="hero"><h1>Seu marketplace de itens Roblox.</h1><p>Encontre produtos para seus jogos favoritos, com uma experiência simples, rápida e feita para celular e computador.</p></section><section class="section" id="categorias"><div class="section-head"><h2>Categorias</h2><span>Explore por jogo</span></div><div class="cats"><a class="cat" href="#produtos" data-category="brainrot"><div class="icon">🧠</div><strong>Roube um Brainrot</strong><small>Itens e produtos</small></a><a class="cat" href="#produtos" data-category="mm2"><div class="icon">🔪</div><strong>Murder Mystery</strong><small>Itens e produtos</small></a><a class="cat" href="#produtos" data-category="blox"><div class="icon">🍎</div><strong>Blox Fruits</strong><small>Itens e produtos</small></a><a class="cat" href="#produtos" data-category="robux"><div class="icon">R$</div><strong>Robux</strong><small>Saldo e produtos</small></a></div></section><section class="section" id="produtos"><div class="section-head"><h2>Produtos</h2><span id="resultCount">Catálogo em preparação</span></div><div id="productGrid" class="products"></div></section><section class="section" id="como-funciona"><div class="section-head"><h2>Como funciona</h2><span>Compra simples</span></div><div class="empty">O catálogo será conectado ao banco de dados na próxima etapa. Os produtos aparecerão aqui automaticamente quando o marketplace estiver vinculado.</div></section></main><footer class="footer">© 2026 Robloox. Marketplace independente de produtos para jogos.</footer><script>const grid=document.getElementById('productGrid'),search=document.getElementById('search'),count=document.getElementById('resultCount');let activeCategory='';function render(){const q=search.value.trim().toLowerCase();grid.innerHTML='';count.textContent='Catálogo em preparação';const empty=document.createElement('div');empty.className='empty';empty.style.gridColumn='1/-1';empty.textContent=q||activeCategory?'Nenhum produto disponível para essa busca ainda.':'Nenhum produto cadastrado ainda.';grid.appendChild(empty)}document.querySelectorAll('[data-category]').forEach(el=>el.addEventListener('click',()=>{activeCategory=el.dataset.category;render()}));search.addEventListener('input',render);render();</script></body></html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="description" content="Robloox — marketplace de itens e produtos para jogos Roblox.">
+  <title>Robloox — Marketplace</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="top">
+    <nav class="nav" aria-label="Navegação principal">
+      <a class="brand" href="./" aria-label="Robloox"><img src="logo.svg" alt="Robloox"></a>
+      <div class="links">
+        <a href="#categorias">Categorias</a><a href="#produtos">Produtos</a><a href="#como-funciona">Como funciona</a>
+      </div>
+      <div class="nav-actions">
+        <label class="search-wrap" aria-label="Buscar produtos">
+          <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.2 4.2"/></svg>
+          <input class="search" id="search" type="search" placeholder="Buscar produtos..." autocomplete="off">
+        </label>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy"><span class="eyebrow">MARKETPLACE ROBLOOX</span><h1>Itens dos seus jogos favoritos em um só lugar.</h1><p>Encontre produtos para seus jogos Roblox com uma experiência rápida, moderna e feita para qualquer tela.</p><a class="hero-btn" href="#categorias">Explorar categorias <span>→</span></a></div>
+      <div class="hero-mark" aria-hidden="true"><img src="logo.svg" alt=""></div>
+    </section>
+
+    <section class="section" id="categorias">
+      <div class="section-head"><div><span class="eyebrow dark">NAVEGUE</span><h2>Categorias</h2></div><span>Explore por jogo</span></div>
+      <div class="cats">
+        <a class="cat" href="#produtos" data-category="brainrot"><span class="cat-icon icon-brain"><svg viewBox="0 0 24 24"><path d="M9 4.5a3 3 0 0 0-3 3v.4a3.1 3.1 0 0 0-1.3 5.7A3 3 0 0 0 8 18.5h1V20h3v-6.5h-1.2a2.8 2.8 0 0 1 0-5.6H12V4.5H9Z"/><path d="M15 4.5a3 3 0 0 1 3 3v.4a3.1 3.1 0 0 1 1.3 5.7A3 3 0 0 1 16 18.5h-1V20h-3v-6.5h1.2a2.8 2.8 0 0 0 0-5.6H12V4.5h3Z"/></svg></span><strong>Roube um Brainrot</strong><small>Itens e produtos</small><span class="arrow">→</span></a>
+        <a class="cat" href="#produtos" data-category="mm2"><span class="cat-icon icon-mm"><svg viewBox="0 0 24 24"><path d="m14.2 3.7 6.1 6.1-2.5 2.5-2-2-6.2 6.2-2.9.4.4-2.9 6.2-6.2-2-2 2.9-2.1Z"/><path d="m4 20 3.3-3.3"/></svg></span><strong>Murder Mystery</strong><small>Itens e produtos</small><span class="arrow">→</span></a>
+        <a class="cat" href="#produtos" data-category="blox"><span class="cat-icon icon-blox"><svg viewBox="0 0 24 24"><path d="M7.5 4.5c3.7 0 6.8 2.8 7 6.4 3 .1 5.2 2.1 5.2 4.6 0 2.7-2.3 4-5.2 4H8.8C5.1 19.5 3 17.8 3 15c0-2.3 1.7-4.2 4.2-4.7A7.1 7.1 0 0 1 7.5 4.5Z"/><circle cx="16" cy="13" r="1"/></svg></span><strong>Blox Fruits</strong><small>Itens e produtos</small><span class="arrow">→</span></a>
+        <a class="cat" href="#produtos" data-category="robux"><span class="cat-icon icon-robux"><svg viewBox="0 0 24 24"><path d="m8 4 10 2.7-2.1 7.8L6 11.8 8 4Z"/><path d="m6 11.8 10 2.7-2.1 5.5L4 17.2l2-5.4Z"/><path d="m10 8 3.5.9"/></svg></span><strong>Robux</strong><small>Saldo e produtos</small><span class="arrow">→</span></a>
+      </div>
+    </section>
+
+    <section class="section" id="produtos">
+      <div class="section-head"><div><span class="eyebrow dark">CATÁLOGO</span><h2>Produtos</h2></div><span id="resultCount">Catálogo em preparação</span></div>
+      <div id="productGrid" class="products"></div>
+    </section>
+
+    <section class="section" id="como-funciona"><div class="section-head"><div><span class="eyebrow dark">SIMPLES</span><h2>Como funciona</h2></div><span>Compra simples</span></div><div class="empty">O catálogo será conectado ao banco de dados na próxima etapa. Os produtos aparecerão aqui automaticamente quando o marketplace estiver vinculado.</div></section>
+  </main>
+  <footer class="footer"><img src="logo.svg" alt="Robloox"><span>© 2026 Robloox. Marketplace independente de produtos para jogos.</span></footer>
+
+  <script>
+    const grid=document.getElementById('productGrid'),search=document.getElementById('search'),count=document.getElementById('resultCount');let activeCategory='';
+    function render(){const q=search.value.trim().toLowerCase();grid.innerHTML='';count.textContent='Catálogo em preparação';const empty=document.createElement('div');empty.className='empty';empty.style.gridColumn='1/-1';empty.textContent=q||activeCategory?'Nenhum produto disponível para essa busca ainda.':'Nenhum produto cadastrado ainda.';grid.appendChild(empty)}
+    document.querySelectorAll('[data-category]').forEach(el=>el.addEventListener('click',()=>{activeCategory=el.dataset.category;render()}));search.addEventListener('input',render);render();
+  </script>
+</body>
+</html>

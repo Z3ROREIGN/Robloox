@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="description" content="Robloox — marketplace de itens e produtos para jogos Roblox.">
-  <title>Robloox — Marketplace</title>
+  <meta name="description" content="Rooblox — marketplace de itens e produtos para jogos Roblox.">
+  <title>Rooblox — Marketplace</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header class="top">
     <nav class="nav" aria-label="Navegação principal">
-      <a class="brand" href="./" aria-label="Robloox"><img src="logo.svg" alt="Robloox"></a>
+      <a class="brand" href="./" aria-label="Rooblox"><img src="logo.svg" alt="Rooblox"></a>
       <div class="links">
         <a href="#categorias">Categorias</a><a href="#produtos">Produtos</a><a href="#como-funciona">Como funciona</a>
       </div>
@@ -22,13 +22,11 @@
       </div>
     </nav>
   </header>
-
   <main>
     <section class="hero">
-      <div class="hero-copy"><span class="eyebrow">MARKETPLACE ROBLOOX</span><h1>Itens dos seus jogos favoritos em um só lugar.</h1><p>Encontre produtos para seus jogos Roblox com uma experiência rápida, moderna e feita para qualquer tela.</p><a class="hero-btn" href="#categorias">Explorar categorias <span>→</span></a></div>
+      <div class="hero-copy"><span class="eyebrow">MARKETPLACE ROOBLOX</span><h1>Itens dos seus jogos favoritos em um só lugar.</h1><p>Encontre produtos para seus jogos Roblox com uma experiência rápida, moderna e feita para qualquer tela.</p><a class="hero-btn" href="#categorias">Explorar categorias <span>→</span></a></div>
       <div class="hero-mark" aria-hidden="true"><img src="logo.svg" alt=""></div>
     </section>
-
     <section class="section" id="categorias">
       <div class="section-head"><div><span class="eyebrow dark">NAVEGUE</span><h2>Categorias</h2></div><span>Explore por jogo</span></div>
       <div class="cats">
@@ -38,16 +36,13 @@
         <a class="cat" href="#produtos" data-category="robux"><span class="cat-icon icon-robux"><svg viewBox="0 0 24 24"><path d="m8 4 10 2.7-2.1 7.8L6 11.8 8 4Z"/><path d="m6 11.8 10 2.7-2.1 5.5L4 17.2l2-5.4Z"/><path d="m10 8 3.5.9"/></svg></span><strong>Robux</strong><small>Saldo e produtos</small><span class="arrow">→</span></a>
       </div>
     </section>
-
     <section class="section" id="produtos">
       <div class="section-head"><div><span class="eyebrow dark">CATÁLOGO</span><h2>Produtos</h2></div><span id="resultCount">Catálogo em preparação</span></div>
       <div id="productGrid" class="products"></div>
     </section>
-
     <section class="section" id="como-funciona"><div class="section-head"><div><span class="eyebrow dark">SIMPLES</span><h2>Como funciona</h2></div><span>Compra simples</span></div><div class="empty">O catálogo será conectado ao banco de dados na próxima etapa. Os produtos aparecerão aqui automaticamente quando o marketplace estiver vinculado.</div></section>
   </main>
-  <footer class="footer"><img src="logo.svg" alt="Robloox"><span>© 2026 Robloox. Marketplace independente de produtos para jogos.</span></footer>
-
+  <footer class="footer"><img src="logo.svg" alt="Rooblox"><span>© 2026 Rooblox. Marketplace independente de produtos para jogos.</span></footer>
   <script>
     const grid=document.getElementById('productGrid'),search=document.getElementById('search'),count=document.getElementById('resultCount');let activeCategory='';
     function render(){const q=search.value.trim().toLowerCase();grid.innerHTML='';count.textContent='Catálogo em preparação';const empty=document.createElement('div');empty.className='empty';empty.style.gridColumn='1/-1';empty.textContent=q||activeCategory?'Nenhum produto disponível para essa busca ainda.':'Nenhum produto cadastrado ainda.';grid.appendChild(empty)}

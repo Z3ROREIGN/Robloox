@@ -7,6 +7,7 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         admin: resolve(__dirname, 'admin.html'),
+        adminContas: resolve(__dirname, 'admin-contas.html'),
         produto: resolve(__dirname, 'produto.html'),
         checkout: resolve(__dirname, 'checkout.html'),
         orders: resolve(__dirname, 'orders.html'),

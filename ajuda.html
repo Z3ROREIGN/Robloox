@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Central de ajuda Rooblox: dúvidas sobre compras, pagamentos, entregas e conta.">
+<title>Rooblox — Central de ajuda</title>
+<link rel="stylesheet" href="/src/help.css">
+</head>
+<body>
+<header class="site-header"><a class="brand" href="/"><img src="/logo.svg" alt="Rooblox"></a><nav><a href="/">Loja</a><a class="active" href="/ajuda.html">Ajuda</a><a href="/termos.html">Termos</a></nav><a class="account" href="/conta.html">Minha conta</a></header>
+<main>
+<section class="help-hero"><span class="eyebrow">CENTRAL DE AJUDA</span><h1>Como podemos ajudar?</h1><p>Encontre respostas rápidas sobre compras, pagamentos, entregas e sua conta.</p><div class="search"><span aria-hidden="true">⌕</span><input id="help-search" type="search" placeholder="Pesquise sua dúvida..." autocomplete="off"></div></section>
+<section class="quick" aria-label="Categorias de ajuda">
+<button data-filter="compras"><b>Compras</b><span>Pedidos e histórico</span></button>
+<button data-filter="pagamentos"><b>Pagamentos</b><span>PIX e confirmação</span></button>
+<button data-filter="entregas"><b>Entregas</b><span>Recebimento do produto</span></button>
+<button data-filter="conta"><b>Conta</b><span>Acesso e segurança</span></button>
+</section>
+<section class="faq-wrap"><div class="section-title"><span class="eyebrow">PERGUNTAS FREQUENTES</span><h2>Respostas para as dúvidas mais comuns</h2></div><div id="faq-list">
+<details data-cat="compras"><summary>Onde encontro minhas compras?</summary><p>Entre em sua conta e abra a área de compras. Os pedidos concluídos ficam registrados no seu histórico, mesmo que você tenha fechado a página depois do pagamento.</p></details>
+<details data-cat="pagamentos"><summary>Como funciona o pagamento por PIX?</summary><p>No checkout, o pedido gera as informações de pagamento e o QR Code. Após o pagamento ser confirmado pelo gateway, o pedido é atualizado automaticamente.</p></details>
+<details data-cat="pagamentos"><summary>O pagamento foi feito, mas ainda está pendente. O que faço?</summary><p>Aguarde a confirmação automática. Não faça um segundo pagamento para o mesmo pedido. Se o status permanecer pendente, guarde o número do pedido e procure o suporte.</p></details>
+<details data-cat="entregas"><summary>Como recebo um produto digital?</summary><p>Produtos digitais podem ser entregues automaticamente quando o pagamento for confirmado. Quando a modalidade exigir atendimento, a área do pedido indicará como continuar a entrega.</p></details>
+<details data-cat="entregas"><summary>Fechei a página depois de pagar. Perdi a compra?</summary><p>Não. O pedido é associado à sua conta e permanece no histórico. Entre novamente e consulte suas compras para acompanhar o status.</p></details>
+<details data-cat="compras"><summary>Posso cancelar ou pedir reembolso?</summary><p>As condições de cancelamento, garantia e reembolso são definidas nos Termos do Rooblox e nas condições específicas do produto. Consulte os termos antes de comprar.</p></details>
+<details data-cat="conta"><summary>Não consigo entrar na minha conta. O que faço?</summary><p>Confira seu e-mail e senha e tente novamente. Se o problema continuar, não compartilhe sua senha com ninguém e procure o suporte.</p></details>
+<details data-cat="conta"><summary>Como proteger minha conta?</summary><p>Use uma senha exclusiva, não compartilhe credenciais e desconfie de páginas que peçam sua senha fora do fluxo oficial do Rooblox.</p></details>
+</div><div id="empty" class="empty" hidden>Nenhuma dúvida encontrada. Tente outra pesquisa.</div></section>
+<section class="support"><div><span class="eyebrow">PRECISA DE MAIS AJUDA?</span><h2>Fale com o suporte</h2><p>Se sua dúvida não estiver aqui, tenha em mãos o número do pedido e explique o que aconteceu.</p></div><a class="button" href="/suporte.html">Abrir suporte</a></section>
+</main>
+<footer><img src="/logo.svg" alt="Rooblox"><span>© Rooblox. Todos os direitos reservados.</span><div><a href="/termos.html">Termos</a><a href="/privacidade.html">Privacidade</a></div></footer>
+<script>
+const items=[...document.querySelectorAll('#faq-list details')], input=document.querySelector('#help-search'), empty=document.querySelector('#empty');
+function filter(term=''){const q=term.toLowerCase().trim();let count=0;items.forEach(el=>{const text=el.textContent.toLowerCase();const ok=!q||text.includes(q);el.hidden=!ok;if(ok)count++});empty.hidden=count!==0}
+input.addEventListener('input',e=>filter(e.target.value));document.querySelectorAll('[data-filter]').forEach(b=>b.addEventListener('click',()=>{input.value='';items.forEach(el=>el.hidden=el.dataset.cat!==b.dataset.filter);empty.hidden=true;document.querySelector('.faq-wrap').scrollIntoView({behavior:'smooth',block:'start'})}));
+</script>
+</body></html>

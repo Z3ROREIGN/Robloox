@@ -1,28 +1,26 @@
-// Keeps the catalog search field focused while the SPA re-renders after each keystroke.
-// main.js currently replaces #app.innerHTML on every search input, which destroys the
-// focused input element on mobile and makes the on-screen keyboard close.
-let pending = false;
+// Prevent the Android keyboard from closing while typing in the catalog search.
+// The search field must not be replaced or re-rendered on each keystroke.
+(() => {
+  const normalize = (value) => String(value || '').trim().toLocaleLowerCase('pt-BR');
 
-document.addEventListener('input', (event) => {
-  const input = event.target;
-  if (!(input instanceof HTMLInputElement) || input.id !== 'q') return;
-  const selectionStart = input.selectionStart;
-  const selectionEnd = input.selectionEnd;
+  document.addEventListener('input', (event) => {
+    const input = event.target;
+    if (!(input instanceof HTMLInputElement) || input.id !== 'q') return;
 
-  if (pending) return;
-  pending = true;
-  setTimeout(() => {
-    pending = false;
-    const next = document.querySelector('#q');
-    if (!next) return;
-    next.focus({ preventScroll: true });
-    try {
-      const end = next.value.length;
-      const start = Math.min(selectionStart ?? end, end);
-      const finish = Math.min(selectionEnd ?? end, end);
-      next.setSelectionRange(start, finish);
-    } catch (_) {
-      // Some mobile browsers do not allow selection changes in every input state.
-    }
-  }, 0);
-}, true);
+    // Block the legacy input listener that rebuilds the SPA tree.
+    event.stopImmediatePropagation();
+
+    const query = normalize(input.value);
+    const cards = document.querySelectorAll('.grid .card');
+    let visible = 0;
+
+    cards.forEach((card) => {
+      const show = !query || normalize(card.textContent).includes(query);
+      card.hidden = !show;
+      if (show) visible++;
+    });
+
+    const count = document.querySelector('.result-count');
+    if (count) count.textContent = `${visible} produto(s)`;
+  }, true);
+})();

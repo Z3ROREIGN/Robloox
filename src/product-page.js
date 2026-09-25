@@ -1,59 +1,45 @@
 import { createClient } from '@supabase/supabase-js';
-
-const url = String(import.meta.env.VITE_SUPABASE_URL || '').replace(/\/+$/, '').replace(/\/rest\/v1$/i, '');
-const key = String(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '');
-const sb = createClient(url, key);
-const id = new URLSearchParams(location.search).get('id');
-const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const brl = (n) => Number(n || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-const app = document.querySelector('#app');
-let p;
-let session;
-let accounts = [];
-
-async function init() {
-  if (!id) {
-    app.innerHTML = '<section class="error-page"><h1>Produto não encontrado</h1><a class="btn" href="/">Voltar à loja</a></section>';
-    return;
-  }
-  const s = await sb.auth.getSession();
-  session = s.data.session;
-  const r = await sb.from('products').select('id,name,description,price,image_url,category_slug,stock_quantity,delivery_type,active,featured').eq('id', id).eq('active', true).maybeSingle();
-  if (r.error || !r.data) {
-    app.innerHTML = '<section class="error-page"><h1>Produto não encontrado</h1><a class="btn" href="/">Voltar à loja</a></section>';
-    return;
-  }
-  p = r.data;
-  const auto = ['automatic', 'digital'].includes(String(p.delivery_type || '').toLowerCase());
-  if (auto && session) {
-    const a = await sb.rpc('list_available_product_accounts', { p_product_id: id });
-    if (!a.error) accounts = a.data || [];
-  }
-  render(auto);
+import './product-features.css';
+const url=String(import.meta.env.VITE_SUPABASE_URL||'').replace(/\/+$/,'').replace(/\/rest\/v1$/i,'');
+const key=String(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY||'');
+const sb=createClient(url,key), app=document.querySelector('#app');
+const id=new URLSearchParams(location.search).get('id');
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const brl=n=>Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+let p,session,accounts=[],favorite=false,wishlist=false,reviews=[],questions=[],deliveredOrders=[];
+const toast=m=>{let e=document.querySelector('.pf-toast');if(!e){e=document.createElement('div');e.className='pf-toast';document.body.append(e)}e.textContent=m;clearTimeout(e._t);e._t=setTimeout(()=>e.remove(),2600)};
+async function init(){
+ if(!id){return fail('Produto não encontrado')}
+ const s=await sb.auth.getSession();session=s.data.session;
+ const r=await sb.from('products').select('id,name,description,price,image_url,category_slug,stock_quantity,delivery_type,active,featured,compare_at_price,badge').eq('id',id).eq('active',true).maybeSingle();
+ if(r.error||!r.data)return fail('Produto não encontrado'); p=r.data;
+ const auto=['automatic','digital'].includes(String(p.delivery_type||'').toLowerCase());
+ if(auto&&session){const a=await sb.rpc('list_available_product_accounts',{p_product_id:id});if(!a.error)accounts=a.data||[]}
+ const [rv,qs]=await Promise.all([sb.from('product_reviews').select('id,rating,body,created_at').eq('product_id',id).order('created_at',{ascending:false}),sb.from('store_product_questions').select('id,question,answer,created_at,answered_at').eq('product_id',id).order('created_at',{ascending:false})]);
+ reviews=rv.data||[];questions=qs.data||[];
+ if(session){
+   const f=await sb.from('product_favorites').select('product_id').eq('user_id',session.user.id).eq('product_id',id).maybeSingle();favorite=!!f.data;
+   const w=await sb.rpc('ensure_default_wishlist');if(!w.error&&w.data){const wi=await sb.from('store_wishlist_items').select('id').eq('wishlist_id',w.data).eq('product_id',id).maybeSingle();wishlist=!!wi.data}
+   const o=await sb.from('store_orders').select('id,created_at').eq('user_id',session.user.id).eq('status','delivered').order('created_at',{ascending:false});
+   const ids=(o.data||[]).map(x=>x.id); if(ids.length){const it=await sb.from('store_order_items').select('order_id').in('order_id',ids).eq('product_id',id);const set=new Set((it.data||[]).map(x=>x.order_id));deliveredOrders=(o.data||[]).filter(x=>set.has(x.id))}
+ }
+ render(auto);
 }
-
-function render(auto) {
-  const stock = auto ? accounts.length : Number(p.stock_quantity || 0);
-  const accountHtml = auto ? `
-    <div class="delivery"><div class="delivery-head"><div><b>Escolha sua conta</b><small>As credenciais ficam protegidas até o pagamento ser confirmado.</small></div><span>${accounts.length} disponível(is)</span></div>
-    ${session ? (accounts.length ? `<div class="accounts">${accounts.map((a, i) => `<label class="account-option"><input type="radio" name="account" value="${esc(a.id)}"><span><b>Conta ${i + 1}</b><small>Disponível • credenciais liberadas após pagamento</small></span></label>`).join('')}</div>` : '<div class="notice">Nenhuma conta disponível no momento.</div>') : '<div class="notice">Entre na sua conta para escolher uma conta disponível.</div>'}</div>` : '';
-  app.innerHTML = `<section class="product-page"><a class="back" href="/#/catalogo">← Voltar ao catálogo</a><div class="product-card"><div class="visual">${p.image_url ? `<img src="${esc(p.image_url)}" alt="${esc(p.name)}">` : '<div class="visual-fallback">ROOBLOX</div>'}</div><div class="details"><span class="eyebrow">${esc(p.category_slug || 'PRODUTO')}</span><h1>${esc(p.name)}</h1><p class="desc">${esc(p.description || 'Produto digital para seu jogo favorito.')}</p><div class="price">${brl(p.price)}</div><div class="meta"><span>✓ Compra protegida</span><span>✓ Entrega ${auto ? 'automática' : 'por atendimento'}</span><span>✓ Pedido salvo na conta</span></div>${accountHtml}<div class="buy-row"><input id="qty" type="number" min="1" max="${auto ? 1 : Math.max(1, stock)}" value="1" ${auto ? 'disabled' : ''}><button id="buy" class="btn" ${stock < 1 ? 'disabled' : ''}>${auto ? 'Continuar para checkout' : 'Continuar para atendimento'}</button></div><div id="msg" class="notice hidden"></div></div></div></section>`;
-  document.querySelector('#buy')?.addEventListener('click', () => {
-    if (!session) { location.href = '/#/login'; return; }
-    const q = auto ? 1 : Math.max(1, Math.min(Number(document.querySelector('#qty').value || 1), stock));
-    const chosen = auto ? [document.querySelector('input[name="account"]:checked')?.value].filter(Boolean) : [];
-    if (auto && chosen.length !== 1) {
-      const msg = document.querySelector('#msg');
-      msg.textContent = 'Selecione a conta que deseja receber.';
-      msg.classList.remove('hidden');
-      return;
-    }
-    let cart = JSON.parse(localStorage.getItem('rooblox_cart') || '[]');
-    cart = cart.filter((x) => x.id !== p.id);
-    cart.push({ id: p.id, name: p.name, price: Number(p.price), quantity: q, accountIds: chosen });
-    localStorage.setItem('rooblox_cart', JSON.stringify(cart));
-    location.href = '/checkout.html';
-  });
+function fail(m){app.innerHTML='<section class="error-page"><h1>'+esc(m)+'</h1><a class="btn" href="/">Voltar à loja</a></section>'}
+function render(auto){
+ const stock=auto?accounts.length:Number(p.stock_quantity||0),avg=reviews.length?reviews.reduce((n,r)=>n+Number(r.rating),0)/reviews.length:0;
+ const accountHtml=auto?'<div class="pf-delivery"><b>Entrega automática</b><span>'+accounts.length+' conta(s) disponível(is). As credenciais são liberadas após a confirmação.</span>'+ (session?(accounts.length?'<div class="pf-accounts">'+accounts.map((a,i)=>'<label><input type="radio" name="account" value="'+esc(a.id)+'"><span>Conta '+(i+1)+'<small>Disponível</small></span></label>').join('')+'</div>':'<div class="pf-note">Sem contas disponíveis no momento.</div>'):'<div class="pf-note">Entre na sua conta para selecionar uma conta.</div>')+'</div>':'<div class="pf-delivery"><b>Entrega por atendimento</b><span>Após o pagamento, nossa equipe acompanha a entrega pelo pedido.</span></div>';
+ app.innerHTML='<section class="product-page"><a class="back" href="/#\/catalogo">← Voltar ao catálogo</a><div class="pf-hero"><div class="pf-visual">'+(p.image_url?'<img src="'+esc(p.image_url)+'" alt="'+esc(p.name)+'">':'<div class="visual-fallback">ROOBLOX</div>')+'</div><div class="pf-details"><div class="pf-top"><span class="eyebrow">'+esc(p.category_slug||'PRODUTO')+'</span><button id="fav" class="pf-icon '+(favorite?'active':'')+'" aria-label="Favoritar">'+(favorite?'♥':'♡')+'</button></div><h1>'+esc(p.name)+'</h1><p class="pf-desc">'+esc(p.description||'Produto digital para seu jogo favorito.')+'</p><div class="pf-price">'+brl(p.price)+(p.compare_at_price?'<del>'+brl(p.compare_at_price)+'</del>':'')+'</div><div class="pf-meta"><span>✓ Compra protegida</span><span>✓ '+(auto?'Entrega automática':'Atendimento')+'</span><span>✓ '+(stock>0?stock+' disponível(is)':'Disponibilidade sob consulta')+'</span></div>'+accountHtml+'<div class="pf-actions"><input id="qty" type="number" min="1" max="'+(auto?1:Math.max(1,stock))+'" value="1" '+(auto?'disabled':'')+'><button id="buy" class="btn" '+(stock<1?'disabled':'')+'>Adicionar e ir ao checkout</button><button id="wish" class="btn secondary '+(wishlist?'active':'')+'">'+(wishlist?'✓ Na lista de desejos':'♡ Salvar na lista')+'</button></div></div></div><section class="pf-sections"><div class="pf-card"><div class="pf-card-head"><div><span class="eyebrow">AVALIAÇÕES</span><h2>Experiências de compradores</h2></div><strong>'+ (avg?avg.toFixed(1):'—') +' ★</strong></div>'+reviewForm()+'<div class="pf-reviews">'+(reviews.length?reviews.map(r=>'<article><div class="pf-stars">'+'★'.repeat(Number(r.rating))+'<span>'+'★'.repeat(5-Number(r.rating))+'</span></div><p>'+esc(r.body)+'</p><small>'+new Date(r.created_at).toLocaleDateString('pt-BR')+'</small></article>').join(''):'<div class="pf-note">Ainda não há avaliações para este produto.</div>')+'</div></div><div class="pf-card"><div class="pf-card-head"><div><span class="eyebrow">DÚVIDAS</span><h2>Pergunte sobre o produto</h2></div></div>'+questionForm()+'<div class="pf-questions">'+(questions.length?questions.map(q=>'<article><b>Q: '+esc(q.question)+'</b>'+(q.answer?'<p><strong>Resposta:</strong> '+esc(q.answer)+'</p>':'<small>Aguardando resposta da equipe.</small>')+'</article>').join(''):'<div class="pf-note">Nenhuma pergunta ainda.</div>')+'</div></div></section></section>';
+ bind(auto);
 }
-
+function reviewForm(){if(!session)return '<div class="pf-note">Entre na conta para avaliar após uma compra entregue.</div>';if(!deliveredOrders.length)return '<div class="pf-note">A avaliação fica disponível depois que um pedido deste produto for entregue.</div>';return '<form id="review-form" class="pf-form"><select name="order_id" required>'+deliveredOrders.map(o=>'<option value="'+o.id+'">Pedido #'+o.id.slice(0,8).toUpperCase()+'</option>').join('')+'</select><select name="rating" required><option value="">Nota</option><option value="5">5 — Excelente</option><option value="4">4 — Muito bom</option><option value="3">3 — Bom</option><option value="2">2 — Regular</option><option value="1">1 — Ruim</option></select><textarea name="body" minlength="3" maxlength="1000" required placeholder="Conte como foi sua experiência"></textarea><button class="btn">Publicar avaliação</button></form>'}
+function questionForm(){if(!session)return '<div class="pf-note">Entre na conta para enviar uma pergunta.</div>';return '<form id="question-form" class="pf-form"><textarea name="question" minlength="3" maxlength="500" required placeholder="Ex.: Como funciona a entrega?"></textarea><button class="btn secondary">Enviar pergunta</button></form>'}
+function bind(auto){
+ document.querySelector('#fav')?.addEventListener('click',async()=>{if(!session)return location.href='/#/login';favorite=!favorite;const q=favorite?sb.from('product_favorites').upsert({user_id:session.user.id,product_id:id},{onConflict:'user_id,product_id'}):sb.from('product_favorites').delete().eq('user_id',session.user.id).eq('product_id',id);if((await q).error){favorite=!favorite;return toast('Não foi possível atualizar o favorito.')}render(auto)});
+ document.querySelector('#wish')?.addEventListener('click',async()=>{if(!session)return location.href='/#/login';const w=await sb.rpc('ensure_default_wishlist');if(w.error)return toast('Não foi possível abrir sua lista.');const q=wishlist?sb.from('store_wishlist_items').delete().eq('wishlist_id',w.data).eq('product_id',id):sb.from('store_wishlist_items').insert({wishlist_id:w.data,product_id:id});const r=await q;if(r.error)return toast('Não foi possível atualizar a lista.');wishlist=!wishlist;render(auto)});
+ document.querySelector('#buy')?.addEventListener('click',()=>{if(!session)return location.href='/#/login';const q=auto?1:Math.max(1,Math.min(Number(document.querySelector('#qty').value||1),stockLimit()));const chosen=auto?[document.querySelector('input[name="account"]:checked')?.value].filter(Boolean):[];if(auto&&!chosen.length)return toast('Selecione a conta que deseja receber.');let cart=JSON.parse(localStorage.getItem('rooblox_cart')||'[]').filter(x=>x.id!==p.id);cart.push({id:p.id,name:p.name,price:Number(p.price),quantity:q,accountIds:chosen,image_url:p.image_url||'',delivery_type:p.delivery_type||'manual'});localStorage.setItem('rooblox_cart',JSON.stringify(cart));location.href='/checkout.html'});
+ document.querySelector('#review-form')?.addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.currentTarget);const r=await sb.from('product_reviews').insert({user_id:session.user.id,product_id:id,order_id:f.get('order_id'),rating:Number(f.get('rating')),body:String(f.get('body')).trim()});if(r.error)return toast(r.error.message.includes('review_requires')?'A avaliação exige um pedido entregue deste produto.':r.error.message);toast('Avaliação publicada.');await init()});
+ document.querySelector('#question-form')?.addEventListener('submit',async e=>{e.preventDefault();const body=String(new FormData(e.currentTarget).get('question')||'').trim();const r=await sb.from('store_product_questions').insert({product_id:id,user_id:session.user.id,question:body});if(r.error)return toast(r.error.message);toast('Pergunta enviada.');await init()});
+}
+function stockLimit(){return Math.max(1,Number(p.stock_quantity||1))}
 init();

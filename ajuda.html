@@ -6,7 +6,7 @@
 <meta name="description" content="Central de ajuda Rooblox: dúvidas sobre compras, pagamentos, entregas e conta.">
 <title>Rooblox — Central de ajuda</title>
 <link rel="stylesheet" href="/src/help.css">
-</head>
+<link rel="stylesheet" href="/src/store-enhancements.css"></head>
 <body>
 <header class="site-header"><a class="brand" href="/"><img src="/logo.svg" alt="Rooblox"></a><nav><a href="/">Loja</a><a class="active" href="/ajuda.html">Ajuda</a><a href="/termos.html">Termos</a></nav><a class="account" href="/conta.html">Minha conta</a></header>
 <main>
@@ -35,4 +35,4 @@ const items=[...document.querySelectorAll('#faq-list details')], input=document.
 function filter(term=''){const q=term.toLowerCase().trim();let count=0;items.forEach(el=>{const text=el.textContent.toLowerCase();const ok=!q||text.includes(q);el.hidden=!ok;if(ok)count++});empty.hidden=count!==0}
 input.addEventListener('input',e=>filter(e.target.value));document.querySelectorAll('[data-filter]').forEach(b=>b.addEventListener('click',()=>{input.value='';items.forEach(el=>el.hidden=el.dataset.cat!==b.dataset.filter);empty.hidden=true;document.querySelector('.faq-wrap').scrollIntoView({behavior:'smooth',block:'start'})}));
 </script>
-</body></html>
+<script type="module" src="/src/store-enhancements.js"></script></body></html>

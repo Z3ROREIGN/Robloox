@@ -1,0 +1,29 @@
+/* Rooblox Complete Upgrade — additive UI layer */
+:root{--rx-bg:#f6f6f7;--rx-card:#fff;--rx-text:#171717;--rx-muted:#6b7280;--rx-line:#e5e7eb;--rx-accent:#111;--rx-soft:#f1f2f4}
+html[data-theme="dark"]{--rx-bg:#0d0f12;--rx-card:#15181d;--rx-text:#f5f7fa;--rx-muted:#a3abb7;--rx-line:#2a3038;--rx-accent:#fff;--rx-soft:#20252d}
+html[data-theme="dark"] body,html[data-theme="dark"] .site-header,html[data-theme="dark"] footer{background:var(--rx-bg)!important;color:var(--rx-text)!important}
+html[data-theme="dark"] .site-header{border-color:var(--rx-line)!important}
+html[data-theme="dark"] .card,html[data-theme="dark"] .panel,html[data-theme="dark"] .cats button,html[data-theme="dark"] .trust div{background:var(--rx-card)!important;border-color:var(--rx-line)!important;color:var(--rx-text)!important}
+html[data-theme="dark"] input,html[data-theme="dark"] select{background:#11151a!important;color:var(--rx-text)!important;border-color:var(--rx-line)!important}
+.rx-actions{display:flex;align-items:center;gap:7px}
+.rx-icon-btn{width:40px;height:40px;border:1px solid var(--rx-line);background:var(--rx-card);color:var(--rx-text);border-radius:9px;display:grid;place-items:center;cursor:pointer}
+.rx-icon-btn:hover{transform:translateY(-1px)}
+.rx-fav{position:absolute;right:9px;top:9px;width:34px;height:34px;border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.92);color:#111;border-radius:50%;display:grid;place-items:center;z-index:3;cursor:pointer;box-shadow:0 5px 15px rgba(0,0,0,.08)}
+.rx-fav.active{background:#111;color:#fff}
+.rx-fav svg{width:16px!important;height:16px!important}
+.card .cover{position:relative}
+.rx-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 16px;padding:10px 0}
+.rx-sort{border:1px solid var(--rx-line);background:var(--rx-card);color:var(--rx-text);border-radius:9px;padding:9px 11px;font:inherit;font-size:12px}
+.rx-count{color:var(--rx-muted);font-size:12px}
+.rx-section{margin-top:18px}
+.rx-fav-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.rx-empty{border:1px dashed var(--rx-line);border-radius:14px;padding:34px;text-align:center;color:var(--rx-muted);grid-column:1/-1}
+.rx-stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 0 18px}
+.rx-stat{border:1px solid var(--rx-line);background:var(--rx-card);border-radius:12px;padding:16px}
+.rx-stat b{display:block;font-size:22px;color:var(--rx-text)}
+.rx-stat span{font-size:11px;color:var(--rx-muted)}
+.rx-install{position:fixed;left:16px;right:16px;bottom:16px;z-index:1000;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 16px;border:1px solid var(--rx-line);border-radius:14px;background:var(--rx-card);box-shadow:0 18px 55px rgba(0,0,0,.16);color:var(--rx-text)}
+.rx-install button{border:0;border-radius:9px;padding:9px 13px;background:#111;color:#fff;font-weight:800;cursor:pointer}
+.rx-notify-dot{position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:#111}
+@media(max-width:900px){.rx-fav-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:680px){.rx-actions{gap:5px}.rx-icon-btn{width:38px;height:38px}.rx-toolbar{align-items:flex-start;flex-direction:column}.rx-sort{width:100%}.rx-stat-row{grid-template-columns:1fr}.rx-fav-grid{grid-template-columns:1fr 1fr}}

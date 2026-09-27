@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-const url=String(import.meta.env.VITE_SUPABASE_URL||'').trim().replace(/\\/+$/,'').replace(/\\/rest\\/v1$/i,'');
+const url=String(import.meta.env.VITE_SUPABASE_URL||'').trim().replace(/\/+$/,'').replace(/\/rest\/v1$/i,'');
 const key=String(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY||'').trim();
 const sb=url&&key?createClient(url,key):null;
 const THEME='rooblox_theme_v2';

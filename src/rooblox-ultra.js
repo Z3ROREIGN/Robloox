@@ -4,71 +4,18 @@ const rawUrl = String(import.meta.env.VITE_SUPABASE_URL || '').trim();
 const url = rawUrl.replace(/\/+$/, '').replace(/\/rest\/v1$/i, '');
 const key = String(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '').trim();
 const sb = url && key ? createClient(url, key) : null;
-
-const THEME = 'rooblox_theme_v2';
-const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({
-  '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-}[c]));
-
-const theme = () => localStorage.getItem(THEME) || localStorage.getItem('rooblox_theme_v1') || 'system';
-
-function applyTheme() {
-  const t = theme();
-  const dark = t === 'dark' || (t === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
-  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
-  document.documentElement.dataset.themePreference = t;
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#080a0d' : '#111111');
-}
-
-function themeUI() {
-  const top = document.querySelector('.site-header .right,.top,.head-right');
-  if (!top || document.querySelector('.rx-theme-menu')) return;
-  const w = document.createElement('div');
-  w.className = 'rx-theme-menu';
-  w.innerHTML = '<button type="button" aria-label="Tema">◐ Tema</button><div class="rx-theme-pop"><button data-t="system">Automático</button><button data-t="light">Claro</button><button data-t="dark">Escuro</button></div>';
-  top.appendChild(w);
-  w.querySelector('button').onclick = () => w.classList.toggle('open');
-  w.querySelectorAll('[data-t]').forEach((b) => b.onclick = () => {
-    localStorage.setItem(THEME, b.dataset.t);
-    localStorage.setItem('rooblox_theme_v1', b.dataset.t === 'system' ? 'light' : b.dataset.t);
-    applyTheme();
-    w.classList.remove('open');
-  });
-}
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 function toast(message) {
   let e = document.querySelector('.rx-toast');
-  if (!e) {
-    e = document.createElement('div');
-    e.className = 'rx-toast';
-    document.body.appendChild(e);
-  }
-  e.textContent = message;
-  clearTimeout(e._t);
-  e._t = setTimeout(() => e.remove(), 2800);
+  if (!e) { e = document.createElement('div'); e.className = 'rx-toast'; document.body.appendChild(e); }
+  e.textContent = message; clearTimeout(e._t); e._t = setTimeout(() => e.remove(), 2800);
 }
 
 async function getUser() {
   if (!sb) return null;
   const { data } = await sb.auth.getUser();
   return data.user || null;
-}
-
-async function notificationBell() {
-  const user = await getUser();
-  if (!user) return;
-  const top = document.querySelector('.site-header .right,.top,.head-right');
-  if (!top || top.querySelector('[data-rx-notify]')) return;
-  const b = document.createElement('a');
-  b.href = '#/conta';
-  b.className = 'rx-icon-btn';
-  b.dataset.rxNotify = '1';
-  b.textContent = '♢';
-  b.title = 'Notificações';
-  b.setAttribute('aria-label', 'Notificações');
-  top.appendChild(b);
-  const { count } = await sb.from('notifications').select('*', { count: 'exact', head: true }).eq('user_id', user.id).is('read_at', null);
-  if (count) b.textContent = `♢ ${count}`;
 }
 
 async function syncFavorite(productId, enabled) {
@@ -98,7 +45,7 @@ function helpCTA() {
   if (!main || main.querySelector('.rx-help-grid')) return;
   const s = document.createElement('section');
   s.className = 'rx-help-grid';
-  s.innerHTML = '<a class="rx-help-card" href="#/suporte"><b>🎧 Atendimento</b><span>Abra um chamado e converse com nossa equipe.</span></a><a class="rx-help-card" href="#/pedidos"><b>📦 Pedidos</b><span>Consulte status, pagamentos e entregas.</span></a><a class="rx-help-card" href="#/conta"><b>⚙️ Conta</b><span>Perfil, segurança, favoritos e preferências.</span></a>';
+  s.innerHTML = '<a class="rx-help-card" href="#/suporte"><b>🎧 Atendimento</b><span>Abra um chamado e converse com nossa equipe.</span></a><a class="rx-help-card" href="#/pedidos"><b>📦 Pedidos</b><span>Consulte status, pagamentos e entregas.</span></a><a class="rx-help-card" href="#/conta"><b>⚙️ Conta</b><span>Perfil, segurança e favoritos.</span></a>';
   main.appendChild(s);
 }
 
@@ -106,75 +53,36 @@ async function supportPage() {
   if (location.hash !== '#/suporte' || !sb) return;
   const user = await getUser();
   const app = document.querySelector('#app');
-  if (!app || !user) return;
-
+  if (!app || !user || app.dataset.rxSupportReady) return;
+  app.dataset.rxSupportReady = '1';
   let tickets = [];
-  const categories = [['order', 'Pedido'], ['payment', 'Pagamento'], ['account', 'Conta'], ['delivery', 'Entrega'], ['technical', 'Técnico'], ['other', 'Outro']];
-  const statusLabel = (s) => ({ OPEN: 'Aberto', IN_PROGRESS: 'Em andamento', WAITING_USER: 'Aguardando você', RESOLVED: 'Resolvido', CLOSED: 'Fechado' }[s] || s);
-
+  const categories = [['order','Pedido'],['payment','Pagamento'],['account','Conta'],['delivery','Entrega'],['technical','Técnico'],['other','Outro']];
+  const statusLabel = (s) => ({OPEN:'Aberto',IN_PROGRESS:'Em andamento',WAITING_USER:'Aguardando você',RESOLVED:'Resolvido',CLOSED:'Fechado'}[s] || s);
   const render = () => {
-    app.innerHTML = `<section class="rx-support-shell"><div class="page-head"><div><span class="eyebrow dark">ATENDIMENTO</span><h1>Central de suporte</h1><p>Abra chamados, acompanhe respostas e resolva problemas em um único lugar.</p></div><button class="primary" id="new-ticket">Novo atendimento</button></div><div class="rx-ticket-layout"><div class="rx-ticket-list">${tickets.length ? tickets.map((t) => `<button class="rx-ticket" data-ticket="${t.id}"><b>${esc(t.subject)}</b><small>${esc(categories.find((c) => c[0] === t.category)?.[1] || t.category)} · ${esc(statusLabel(t.status))}</small></button>`).join('') : '<div class="rx-empty-state">Você ainda não abriu chamados.</div>'}</div><div id="ticket-area" class="rx-chat-box"><div class="rx-empty-state">Selecione um atendimento para visualizar a conversa.</div></div></div></section>`;
-    document.querySelector('#new-ticket').onclick = () => newTicket();
-    document.querySelectorAll('[data-ticket]').forEach((b) => b.onclick = () => openTicket(b.dataset.ticket));
+    app.innerHTML = `<section class="rx-support-shell"><div class="page-head"><div><span class="eyebrow dark">ATENDIMENTO</span><h1>Central de suporte</h1><p>Abra chamados, acompanhe respostas e resolva problemas em um único lugar.</p></div><button class="primary" id="new-ticket">Novo atendimento</button></div><div class="rx-ticket-layout"><div class="rx-ticket-list">${tickets.length ? tickets.map(t=>`<button class="rx-ticket" data-ticket="${t.id}"><b>${esc(t.subject)}</b><small>${esc(categories.find(c=>c[0]===t.category)?.[1]||t.category)} · ${esc(statusLabel(t.status))}</small></button>`).join('') : '<div class="rx-empty-state">Você ainda não abriu chamados.</div>'}</div><div id="ticket-area" class="rx-chat-box"><div class="rx-empty-state">Selecione um atendimento para visualizar a conversa.</div></div></div></section>`;
+    app.querySelector('#new-ticket').onclick = newTicket;
+    app.querySelectorAll('[data-ticket]').forEach(b=>b.onclick=()=>openTicket(b.dataset.ticket));
   };
-
-  const load = async () => {
-    const r = await sb.from('support_tickets').select('id,subject,category,status,priority,created_at,updated_at').eq('user_id', user.id).order('updated_at', { ascending: false });
-    tickets = r.data || [];
-    render();
-  };
-
+  const load = async () => { const r=await sb.from('support_tickets').select('id,subject,category,status,priority,created_at,updated_at').eq('user_id',user.id).order('updated_at',{ascending:false}); tickets=r.data||[]; render(); };
   const newTicket = () => {
-    app.querySelector('#ticket-area').innerHTML = `<form class="rx-empty-state" id="ticket-form"><input name="subject" required maxlength="120" placeholder="Assunto"><select name="category">${categories.map((c) => `<option value="${c[0]}">${c[1]}</option>`).join('')}</select><textarea name="body" required maxlength="3000" placeholder="Descreva o problema"></textarea><button class="primary">Criar atendimento</button></form>`;
-    document.querySelector('#ticket-form').onsubmit = async (e) => {
-      e.preventDefault();
-      const f = new FormData(e.currentTarget);
-      const r = await sb.from('support_tickets').insert({ user_id: user.id, subject: String(f.get('subject')).trim(), category: f.get('category') }).select('id').single();
-      if (r.error) return toast(r.error.message);
-      const m = String(f.get('body') || '').trim();
-      if (m) await sb.from('support_messages').insert({ ticket_id: r.data.id, sender_id: user.id, body: m });
-      await load();
-      openTicket(r.data.id);
-    };
+    app.querySelector('#ticket-area').innerHTML=`<form class="rx-empty-state" id="ticket-form"><input name="subject" required maxlength="120" placeholder="Assunto"><select name="category">${categories.map(c=>`<option value="${c[0]}">${c[1]}</option>`).join('')}</select><textarea name="body" required maxlength="3000" placeholder="Descreva o problema"></textarea><button class="primary">Criar atendimento</button></form>`;
+    app.querySelector('#ticket-form').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.currentTarget);const r=await sb.from('support_tickets').insert({user_id:user.id,subject:String(f.get('subject')).trim(),category:f.get('category')}).select('id').single();if(r.error)return toast(r.error.message);const m=String(f.get('body')||'').trim();if(m)await sb.from('support_messages').insert({ticket_id:r.data.id,sender_id:user.id,body:m});await load();openTicket(r.data.id);};
   };
-
-  const openTicket = async (id) => {
-    const t = tickets.find((x) => x.id === id);
-    if (!t) return;
-    const area = document.querySelector('#ticket-area');
-    area.innerHTML = `<div class="rx-chat-head"><b>${esc(t.subject)}</b><span class="rx-badge">${esc(statusLabel(t.status))}</span></div><div id="rx-msgs" class="rx-chat-messages"><div class="rx-empty-state">Carregando…</div></div><form id="rx-compose" class="rx-chat-compose"><input name="body" maxlength="3000" required placeholder="Escreva uma mensagem..."><button>Enviar</button></form>`;
-    const loadMessages = async () => {
-      const r = await sb.from('support_messages').select('id,sender_id,body,created_at').eq('ticket_id', id).order('created_at');
-      const box = document.querySelector('#rx-msgs');
-      if (box) box.innerHTML = (r.data || []).map((m) => `<div class="rx-msg ${m.sender_id === user.id ? 'mine' : ''}"><span>${esc(m.body)}</span><small>${new Date(m.created_at).toLocaleString('pt-BR')}</small></div>`).join('') || '<div class="rx-empty-state">Nenhuma mensagem ainda.</div>';
-      if (box) box.scrollTop = box.scrollHeight;
-    };
+  const openTicket = async id => {
+    const t=tickets.find(x=>x.id===id); if(!t)return;
+    const area=app.querySelector('#ticket-area');
+    area.innerHTML=`<div class="rx-chat-head"><b>${esc(t.subject)}</b><span class="rx-badge">${esc(statusLabel(t.status))}</span></div><div id="rx-msgs" class="rx-chat-messages"><div class="rx-empty-state">Carregando…</div></div><form id="rx-compose" class="rx-chat-compose"><input name="body" maxlength="3000" required placeholder="Escreva uma mensagem..."><button>Enviar</button></form>`;
+    const loadMessages=async()=>{const r=await sb.from('support_messages').select('id,sender_id,body,created_at').eq('ticket_id',id).order('created_at');const box=app.querySelector('#rx-msgs');if(box)box.innerHTML=(r.data||[]).map(m=>`<div class="rx-msg ${m.sender_id===user.id?'mine':''}"><span>${esc(m.body)}</span><small>${new Date(m.created_at).toLocaleString('pt-BR')}</small></div>`).join('')||'<div class="rx-empty-state">Nenhuma mensagem ainda.</div>';if(box)box.scrollTop=box.scrollHeight;};
     await loadMessages();
-    document.querySelector('#rx-compose').onsubmit = async (e) => {
-      e.preventDefault();
-      const f = new FormData(e.currentTarget);
-      const body = String(f.get('body') || '').trim();
-      if (!body) return;
-      const r = await sb.from('support_messages').insert({ ticket_id: id, sender_id: user.id, body });
-      if (r.error) return toast(r.error.message);
-      e.currentTarget.reset();
-      await loadMessages();
-    };
+    app.querySelector('#rx-compose').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.currentTarget);const body=String(f.get('body')||'').trim();if(!body)return;const r=await sb.from('support_messages').insert({ticket_id:id,sender_id:user.id,body});if(r.error)return toast(r.error.message);e.currentTarget.reset();await loadMessages();};
   };
-
   await load();
 }
 
 function run() {
-  applyTheme();
-  themeUI();
-  notificationBell();
+  enhanceFavorites();
   helpCTA();
   supportPage();
-  enhanceFavorites();
 }
-
-matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => theme() === 'system' && applyTheme());
-window.addEventListener('hashchange', () => setTimeout(run, 60));
-new MutationObserver(() => queueMicrotask(run)).observe(document.documentElement, { subtree: true, childList: true });
+window.addEventListener('hashchange', () => setTimeout(run, 80));
 run();
